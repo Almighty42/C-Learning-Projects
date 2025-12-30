@@ -3,7 +3,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-void terminate(char* m);
+static void terminate(char* m);
+static size_t get_file_size(FILE* file);
 
 int main(int argc, char* argv[])
 {
@@ -12,23 +13,26 @@ int main(int argc, char* argv[])
 		    "Incorrect use of hexdump, please provide a argument.");
 
 	FILE* file;
+	file = fopen(argv[1], "rb");
 
-	// TODO: Create a dynamic buffer
-	char buffer[1000];
-	int bytes_read;
-	int bytes_current = 0;
+	size_t bytes_read;
+	size_t bytes_current = 0;
+	size_t file_size = get_file_size(file);
+
+	if (!file_size)
+		return -1;
+	char* buffer = malloc(file_size);
+	if (buffer == NULL)
+		terminate("Error - program ran out of memory");
 	char* ptr = buffer;
 	char* prev_ptr = buffer;
-
-	file = fopen(argv[1], "r");
 
 	if (!file)
 		terminate("Error trying to open the file - check for "
 		          "misspellings or if file exists.");
+	bytes_read = fread(buffer, 1, file_size, file);
 
-	bytes_read = fread(buffer, 1, sizeof(buffer) - 1, file);
-
-	printf("%08x  ", bytes_current);
+	printf("%08zx  ", bytes_current);
 	while (bytes_current < bytes_read) {
 		for (; ptr < prev_ptr + 8 && bytes_current < bytes_read;
 		     ptr++) {
@@ -52,15 +56,26 @@ int main(int argc, char* argv[])
 				putchar('.');
 		}
 		printf("|");
-		printf("\n%08x  ", bytes_current);
+		printf("\n%08zx  ", bytes_current);
 	}
 	printf("\n");
 	fclose(file);
+	free(buffer);
 	return 0;
 }
 
-void terminate(char* m)
+static void terminate(char* m)
 {
 	printf("%s\n", m);
 	exit(EXIT_FAILURE);
+}
+
+static size_t get_file_size(FILE* file)
+{
+	fseek(file, 0, SEEK_END);
+	long size = ftell(file);
+	if (size < 0)
+		return 0;
+	fseek(file, 0, SEEK_SET);
+	return size;
 }
