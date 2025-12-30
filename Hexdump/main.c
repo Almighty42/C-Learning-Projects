@@ -1,3 +1,4 @@
+#include <ctype.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -16,6 +17,8 @@ int main(int argc, char* argv[])
 	char buffer[1000];
 	int bytes_read;
 	int bytes_current = 0;
+	char* ptr = buffer;
+	char* prev_ptr = buffer;
 
 	file = fopen(argv[1], "r");
 
@@ -23,29 +26,32 @@ int main(int argc, char* argv[])
 		terminate("Error trying to open the file - check for "
 		          "misspellings or if file exists.");
 
-	while ((bytes_read = fread(buffer, 1, sizeof(buffer) - 1, file)) > 0) {
-		printf("%08x  ", bytes_current);
-		char ASCII_list[1000];
-		for (int i = 0; i < bytes_read; i++) {
-			if (buffer[i] >= 32 && buffer[i] <= 127)
-				ASCII_list[i] = buffer[i];
-			else
-				ASCII_list[i] = '.';
-			if (i % 16 == 0 && i != 0) {
-				printf("  ");
-				printf("|");
-				for (char j = 0; j < 16; j++) {
-					putchar(ASCII_list[j + (i - 16)]);
-				}
-				printf("|");
-				printf("\n");
-				printf("%08x  ", bytes_current);
-			}
-			else if (i % 8 == 0 && i != 0)
-				printf(" ");
-			printf("%02x ", buffer[i] & 0xFF);
+	bytes_read = fread(buffer, 1, sizeof(buffer) - 1, file);
+
+	printf("%08x  ", bytes_current);
+	while (bytes_current < bytes_read) {
+		for (; ptr < prev_ptr + 8 && bytes_current < bytes_read;
+		     ptr++) {
+			printf("%02x ", *ptr & 0xFF);
 			bytes_current++;
 		}
+		printf(" ");
+		for (; ptr < prev_ptr + 16 && bytes_current < bytes_read;
+		     ptr++) {
+			printf("%02x ", *ptr & 0xFF);
+			bytes_current++;
+		}
+		if (bytes_read == bytes_current)
+			for (char i = ptr - prev_ptr; i < 16; i++)
+				printf("   ");
+		printf(" |");
+		for (; prev_ptr < ptr; prev_ptr++) {
+			if (isprint(*prev_ptr))
+				putchar(*prev_ptr);
+			else
+				putchar('.');
+		}
+		printf("|");
 		printf("\n%08x  ", bytes_current);
 	}
 	printf("\n");
