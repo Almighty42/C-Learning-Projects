@@ -5,6 +5,8 @@ TARGET = bmp_rotate
 SOURCES = main.c bmp_rotate.c
 HEADERS = bmp_rotate.h
 
+.DEFAULT_GOAL := prod
+
 debug: CFLAGS += $(CFLAGS_DEBUG)
 debug: $(TARGET)_debug
 
