@@ -1,5 +1,23 @@
-bmp_rotate: bmp_rotate.c
-	gcc -Wall -Wextra -Wpedantic -Werror -o bmp_rotate bmp_rotate.c
+CC = gcc
+CFLAGS_DEBUG = -Wall -Wextra -Werror -std=c11 -g -fsanitize=address -O0 -DDEBUG
+CFLAGS_PROD = -Wall -Wextra -std=c11 -O2 -DNDEBUG
+TARGET = bmp_rotate
+SOURCES = main.c bmp_rotate.c
+HEADERS = bmp_rotate.h
 
-debug: bmp_rotate.c
-	gcc -g -O0 -DDEBUG -o bmp_rotate_debug bmp_rotate.c
+debug: CFLAGS += $(CFLAGS_DEBUG)
+debug: $(TARGET)_debug
+
+prod: CFLAGS += $(CFLAGS_PROD)
+prod: $(TARGET)
+
+$(TARGET)_debug: $(SOURCES) $(HEADERS) Makefile
+	$(CC) $(CFLAGS) -o $@ $(SOURCES) 
+
+$(TARGET): $(SOURCES) $(HEADERS) Makefile
+	$(CC) $(CFLAGS) -o $@ $(SOURCES) -s
+
+clean:
+	rm -f $(TARGET) $(TARGET)_debug
+
+.PHONY: debug prod clean

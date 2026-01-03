@@ -19,7 +19,7 @@ struct bmp_header
 
 void terminate(char* s);
 uint8_t parse_header(FILE* fp, struct bmp_header* header_buffer);
-uint8_t rotate_bmp_image(FILE* fp, uint32_t width, uint32_t height);
-static void reverse_pixels(uint8_t* arr, uint32_t size);
+uint8_t* rotate_row(FILE* fp, uint32_t width, uint32_t height,
+                    uint32_t data_offset, uint32_t column);
 
 #endif

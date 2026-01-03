@@ -30,22 +30,6 @@ uint8_t parse_header(FILE* fp, struct bmp_header* header_buffer)
 	return 0;
 }
 
-uint8_t rotate_bmp_image(FILE* fp, uint32_t width, uint32_t height)
-{
-	uint8_t* source_line;
-	uint8_t* destination_line;
-	uint8_t temp[height * 3];
-	for (uint32_t i = 0; i < width; i += 3) {
-		for (uint32_t j = 0; j < width; j += 3) {
-			fread(temp, 3, 1, fp);
-			fseek(fp, width - 3, SEEK_CUR);
-		}
-		reverse_pixels(temp, height * 3);
-		// TODO: Write to destination line and then
-		// Write to stdout or just return result
-	}
-}
-
 static void reverse_pixels(uint8_t* arr, uint32_t size)
 {
 	uint8_t *start = arr, *end = arr + (size - 3);
@@ -68,4 +52,20 @@ static void reverse_pixels(uint8_t* arr, uint32_t size)
 		start += 3;
 		end -= 3;
 	}
+}
+
+uint8_t* rotate_row(FILE* fp, uint32_t width, uint32_t height,
+                    uint32_t data_offset, uint32_t column)
+{
+	uint32_t bytes_per_row = ((width * 3 + 3) / 4) * 4;
+	uint8_t* row_ptr = malloc(height * 3);
+	if (!row_ptr)
+		return NULL;
+	for (uint32_t j = 0; j < height; j++) {
+		long position = data_offset + j * bytes_per_row + column * 3;
+		fseek(fp, position, SEEK_SET);
+		fread(row_ptr + j * 3, 3, 1, fp);
+	}
+	reverse_pixels(row_ptr, height * 3);
+	return row_ptr;
 }

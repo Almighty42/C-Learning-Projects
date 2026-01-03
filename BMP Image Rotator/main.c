@@ -43,6 +43,35 @@ int main(int argc, char* argv[])
 	uint32_t height = header_buffer->height;
 
 	fseek(fp, header_buffer->data_offset, SEEK_SET);
-	uint8_t op_result = rotate_bmp_image(fp, width, height);
+
+	FILE* out;
+	if ((out = fopen("out.bmp", "wb")) == NULL)
+		terminate("Error trying to create out.bmp");
+
+	struct bmp_header out_header = *header_buffer;
+	out_header.width = height;
+	out_header.height = width;
+	uint32_t new_bytes_per_row = ((height * 3 + 3) / 4) * 4;
+	out_header.file_size = 54 + new_bytes_per_row * width;
+	fwrite(&out_header, sizeof(struct bmp_header), 1, out);
+
+	uint8_t* tmp_row;
+	for (uint32_t i = 0; i < width; i++) {
+		if ((tmp_row = rotate_row(fp, width, height,
+		                          header_buffer->data_offset, i)) ==
+		    NULL)
+			terminate(
+			    "Error trying allocate memory - not enough memory");
+		fwrite(tmp_row, height * 3, 1, out);
+
+		uint32_t padding = new_bytes_per_row - (height * 3);
+		for (uint32_t p = 0; p < padding; p++)
+			fputc(0, out);
+
+		free(tmp_row);
+	}
+	free(header_buffer);
+	fclose(out);
+
 	return 0;
 }
