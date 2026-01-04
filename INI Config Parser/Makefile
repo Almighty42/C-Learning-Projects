@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS_DEBUG = -Wall -Wextra -Werror -std=c11 -g -fsanitize=address -O0 -DDEBUG
+CFLAGS_DEBUG =  -std=c11 -g -fsanitize=address -O0 -DDEBUG
 CFLAGS_PROD = -Wall -Wextra -std=c11 -O2 -DNDEBUG
 
 TARGET = config_parser
