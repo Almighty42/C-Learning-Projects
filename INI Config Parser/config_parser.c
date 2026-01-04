@@ -13,49 +13,50 @@ static FILE* open_file(char* argv)
 	return fp;
 }
 
-static char* find_section(char* line)
+static void find_section(char* line, char* section)
 {
-	char* section;
+	uint32_t i = 0;
 	if (*line == '[')
 		line++;
 	while (*line != ']') {
 		if (*line == ' ' || *line == '\n' || *line == '\t')
 			terminate("Error syntax error while trying to parse a "
 			          "section");
-		*section = *line;
-		section++;
+		section[i] = *line;
+		i++;
 		line++;
 	}
-	return section;
+	section[++i] = '\0';
 }
 
-static char* find_key(char* line)
+static void find_key(char* line, char* key)
 {
-	char* key;
+	uint32_t i = 0;
 	while (*line != '=') {
 		if (*line != ' ')
-			*key = *line;
-		key++;
+			key[i] = *line;
+		i++;
 		line++;
 	}
-	*(++key) = '\0';
-	return key;
+	key[++i] = '\0';
 }
 
-static char* find_val(char* line)
+static void find_val(char* line, char* val)
 {
-	char* val;
+	uint32_t i = 0;
 	while (*line != '=')
 		line++;
 	line++;
 	while (*line != '\n') {
-		if (*line != ' ')
-			*val = *line;
-		val++;
+		if (*line == ' ') {
+			line++;
+			continue;
+		}
+		val[i] = *line;
+		i++;
 		line++;
 	}
-	*(++val) = '\0';
-	return val;
+	val[++i] = '\0';
 }
 
 void terminate(char* s)
@@ -82,42 +83,43 @@ uint8_t config_load(struct config_t* cfg, char* filename)
 	char line[MAX_LINE];
 	bool entered_section = false;
 
+	if (fgets(line, MAX_LINE, fp) == NULL)
+		terminate("Error in ini file, no line in the file can exceed "
+		          "120 characters");
+
 	while (fgets(line, MAX_LINE, fp) != NULL) {
-		char* section;
+		char section[MAX_LINE];
 		if (*line == '[' && strchr(line, ']')) {
 			entered_section = true;
-			// section = allocate(section,
-			// sizeof(find_section(line)));
-			section = find_section(line);
+			find_section(line, section);
 		}
 		if (entered_section) {
 			if (strchr(line, '=') == NULL)
 				continue;
-			char* key;
-			// key = allocate(key, sizeof(find_key(line)));
-			key = find_key(line);
 
-			char* value;
-			// value = allocate(value, sizeof(find_value(line)));
-			value = find_val(line);
+			char key[MAX_LINE] = {0};
+			find_key(line, key);
+
+			char value[MAX_LINE] = {};
+			find_val(line, value);
 
 			struct config_entry_t* entry;
 			if ((entry = malloc(sizeof(struct config_entry_t))) ==
 			    NULL)
 				terminate("Error trying to allocate memory - "
 				          "not enough memory");
-			entry->section = section;
-			entry->key = key;
-			entry->value = value;
+
+			entry->section = strdup(section);
+			entry->key = strdup(key);
+			entry->value = strdup(value);
+
 			cfg->count++;
+
 			printf("Section - %s, key - %s, value - %s\n", section,
 			       key, value);
 			free(entry);
 		}
 	}
-	// if (fgets(line, MAX_LINE, fp) == NULL)
-	// 	terminate("Error in ini file, no line in the file can
-	// exceed " 	          "120 characters");
 
 	return 0;
 }
