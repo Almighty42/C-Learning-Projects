@@ -8,14 +8,14 @@ int main(int argc, char* argv[])
 	char section[MAX_LINE];
 	char key[MAX_LINE];
 
-	parse_args(argv, section, key);
-
 	switch (handle_user_input(argc, argv)) {
 		case 1:
+			parse_args(argv, section, key);
 			config_load(&cfg, argv[1]);
 			config_get(&cfg, section, key);
 			break;
 		case 2:
+			parse_args(argv, section, key);
 			config_load(&cfg, argv[1]);
 			break;
 		case 0:
