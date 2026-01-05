@@ -19,10 +19,13 @@ struct config_t
 	uint32_t count;
 };
 
-void terminate(char* s);
+void config_init(struct config_t* cfg);
+void config_load(struct config_t* cfg, char* filename);
+void config_free(struct config_t* cfg);
+void config_get(struct config_t* cfg, char section[MAX_LINE],
+                char key[MAX_LINE]);
 uint8_t handle_user_input(int argc, char* argv[]);
-uint8_t config_load(struct config_t* cfg, char* filename);
-// uint8_t* config_get(config_t* cfg, const uint8_t** section, const uint8_t*
-// key);
+void parse_args(char* argv[], char section[MAX_LINE], char key[MAX_LINE]);
+void terminate(char* s);
 
 #endif

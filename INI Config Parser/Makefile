@@ -1,6 +1,6 @@
 CC = gcc
-CFLAGS_DEBUG =  -std=c11 -g -fsanitize=address -O0 -DDEBUG
-CFLAGS_PROD = -Wall -Wextra -std=c11 -O2 -DNDEBUG
+CFLAGS_DEBUG =  -std=gnu11 -g -fsanitize=address -O0 -DDEBUG
+CFLAGS_PROD = -Wall -Wextra -std=gnu11 -O2 -DNDEBUG
 
 TARGET = config_parser
 SOURCES = main.c config_parser.c

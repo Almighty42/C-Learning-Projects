@@ -1,22 +1,27 @@
 #include "config_parser.h"
-#include <stdlib.h>
 
 int main(int argc, char* argv[])
 {
-	struct config_t* cfg;
-	if ((cfg = malloc(sizeof(struct config_t))) == NULL)
-		terminate(
-		    "Error trying to allocate memory - not enough memory");
+	struct config_t cfg;
+	config_init(&cfg);
+
+	char section[MAX_LINE];
+	char key[MAX_LINE];
+
+	parse_args(argv, section, key);
+
 	switch (handle_user_input(argc, argv)) {
 		case 1:
-			config_load(cfg, argv[1]);
+			config_load(&cfg, argv[1]);
+			config_get(&cfg, section, key);
 			break;
 		case 2:
+			config_load(&cfg, argv[1]);
 			break;
 		case 0:
 			terminate("Usage: config_parser config_file.ini --get "
 			          "/ --set "
 			          "Section.Value");
 	}
-	free(cfg);
+	config_free(&cfg);
 }
