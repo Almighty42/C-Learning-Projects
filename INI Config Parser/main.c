@@ -7,16 +7,18 @@ int main(int argc, char* argv[])
 
 	char section[MAX_LINE];
 	char key[MAX_LINE];
+	char value[MAX_LINE];
 
 	switch (handle_user_input(argc, argv)) {
 		case 1:
-			parse_args(argv, section, key);
+			parse_args_get(argv, section, key);
 			config_load(&cfg, argv[1]);
 			config_get(&cfg, section, key);
 			break;
 		case 2:
-			parse_args(argv, section, key);
+			parse_args_set(argv, section, key, value);
 			config_load(&cfg, argv[1]);
+			config_set(&cfg, section, key, value, argv[1]);
 			break;
 		case 0:
 			terminate("Usage: config_parser config_file.ini --get "
