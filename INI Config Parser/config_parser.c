@@ -179,7 +179,9 @@ static void find_key(char* line, char* key)
 	uint32_t i = 0;
 	while (*line != '=' && *line != '\0' && i < MAX_LINE - 1) {
 		if (*line != ' ')
-			key[i++] = *line++;
+			key[i] = *line;
+		i++;
+		line++;
 	}
 	key[++i] = '\0';
 }
