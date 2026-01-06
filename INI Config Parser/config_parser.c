@@ -51,6 +51,8 @@ void config_load(struct config_t* cfg, char* filename)
 			add_config_entry(cfg, section, key, value);
 		}
 	}
+
+	fclose(fp);
 }
 void config_free(struct config_t* cfg)
 {
@@ -163,13 +165,11 @@ static void find_section(char* line, char* section)
 	uint32_t i = 0;
 	if (*line == '[')
 		line++;
-	while (*line != ']') {
+	while (*line != ']' && *line != '\0' && i < MAX_LINE - 1) {
 		if (*line == ' ' || *line == '\n' || *line == '\t')
 			terminate("Error syntax error while trying to parse a "
 			          "section");
-		section[i] = *line;
-		i++;
-		line++;
+		section[i++] = *line++;
 	}
 	section[++i] = '\0';
 }
@@ -177,11 +177,9 @@ static void find_section(char* line, char* section)
 static void find_key(char* line, char* key)
 {
 	uint32_t i = 0;
-	while (*line != '=') {
+	while (*line != '=' && *line != '\0' && i < MAX_LINE - 1) {
 		if (*line != ' ')
-			key[i] = *line;
-		i++;
-		line++;
+			key[i++] = *line++;
 	}
 	key[++i] = '\0';
 }
@@ -192,14 +190,12 @@ static void find_val(char* line, char* val)
 	while (*line != '=')
 		line++;
 	line++;
-	while (*line != '\n') {
+	while (*line != '\n' && *line != '\0' && i < MAX_LINE - 1) {
 		if (*line == ' ') {
 			line++;
 			continue;
 		}
-		val[i] = *line;
-		i++;
-		line++;
+		val[i++] = *line++;
 	}
 	val[++i] = '\0';
 }
@@ -245,7 +241,6 @@ static void config_export(struct config_t* cfg, char* filename)
 	FILE* out = fopen(filename, "wb");
 	if (out == NULL)
 		terminate("Error trying to re-write file");
-	bool is_section_written = false;
 	char prev_section[MAX_LINE] = {0};
 	char line[MAX_LINE];
 
